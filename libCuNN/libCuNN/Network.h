@@ -16,8 +16,5 @@ public:
 public:
 	real* Output(real input[]);
 	void Train(real input[], real target[], real study_rate);
-
-	real* Output(real input[], count begLayIdx, count endLayIdx);
-	void Train(real input[], real target[], count begLayIdx, count endLayIdx, real study_rate);
 };
 
