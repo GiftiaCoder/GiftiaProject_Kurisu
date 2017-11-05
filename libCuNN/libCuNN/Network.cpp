@@ -30,10 +30,8 @@ void CNetwork::Train(real input[], real target[], real study_rate) {
 	}
 }
 
-real* CNetwork::Output(real input[], count begLayIdx, count endLayIdx) {
+//real* CNetwork::Output(real input[], count begLayIdx, count endLayIdx) {
+//}
 
-}
-
-void Train(real input[], real target[], count begLayIdx, count endLayIdx, real study_rate) {
-
-}
+//void Train(real input[], real target[], count begLayIdx, count endLayIdx, real study_rate) {
+//}
