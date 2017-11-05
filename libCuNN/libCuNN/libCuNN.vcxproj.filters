@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CudaCompile Include="main.cu" />
+    <CudaCompile Include="libs.cu">
+      <Filter>lib</Filter>
+    </CudaCompile>
+    <CudaCompile Include="init.cu">
+      <Filter>lib</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="libs.cuh">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="util.cuh">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="init.cuh">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Layer.h">
+      <Filter>nn</Filter>
+    </ClInclude>
+    <ClInclude Include="Network.h">
+      <Filter>nn</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="lib">
+      <UniqueIdentifier>{5f07ec32-2329-40b3-842d-f7baaebdef2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nn">
+      <UniqueIdentifier>{9796074e-8740-4c15-a584-80fd406051bc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Layer.cpp">
+      <Filter>nn</Filter>
+    </ClCompile>
+    <ClCompile Include="Network.cpp">
+      <Filter>nn</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
