@@ -50,8 +50,6 @@ void MergePlus(real merge[], count input_num, count output_num) {
 
 void GetLayerOutput(real input[], real bias[], real weight[], real output[], count input_num, count output_num, real merge[]) {
 	count weight_num = input_num * output_num;
-	count gd;
-	count bd;
 
 	cudaMultiply << <cudaGetGD(weight_num), cudaGetBD(weight_num) >> >(input, weight, merge, input_num, weight_num);
 	MergePlus(merge, input_num, output_num);
