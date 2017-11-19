@@ -168,6 +168,8 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
   <ItemGroup>
     <ClCompile Include="AENetwork.cpp" />
     <ClCompile Include="BPNetwork.cpp" />
+    <ClCompile Include="demo.cpp" />
+    <ClCompile Include="dllexport.cpp" />
     <ClCompile Include="NeuroLayer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

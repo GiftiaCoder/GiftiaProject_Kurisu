@@ -58,5 +58,7 @@
     <ClCompile Include="NeuroLayer.cpp">
       <Filter>nn</Filter>
     </ClCompile>
+    <ClCompile Include="demo.cpp" />
+    <ClCompile Include="dllexport.cpp" />
   </ItemGroup>
 </Project>

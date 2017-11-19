@@ -31,6 +31,7 @@ void BPNetwork::Output(real input[], count from_lay, count to_lay) {
 	while (pBegin != pEnd) {
 		pBegin->Output(input);
 		input = pBegin->GetOutput();
+		++pBegin;
 	}
 }
 
