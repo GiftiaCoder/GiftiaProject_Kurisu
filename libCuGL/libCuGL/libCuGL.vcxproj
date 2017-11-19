@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllimpl.cpp" />
+    <ClCompile Include="libcugl.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{42A30EE5-9940-47EE-AE24-A2D057420F8E}</ProjectGuid>
