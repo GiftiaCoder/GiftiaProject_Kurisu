@@ -10,4 +10,6 @@ void TrainTopLayer(real input[], real output[], real target[], real weight[], re
 
 void TrainHiddenLayer(real input[], real weight[], real gradout[], real bias[], count input_num, count output_num, real grad[], real merge[], real study_rate);
 
+void GetTopGrad(real output[], real target[], real grad[], count output_num);
+
 #endif

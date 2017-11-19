@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CudaCompile Include="main.cu" />
     <CudaCompile Include="libs.cu">
       <Filter>lib</Filter>
     </CudaCompile>
@@ -19,10 +18,19 @@
     <ClInclude Include="init.cuh">
       <Filter>lib</Filter>
     </ClInclude>
-    <ClInclude Include="Layer.h">
-      <Filter>nn</Filter>
+    <ClInclude Include="NeuroNetwork.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Network.h">
+    <ClInclude Include="GenerableNeuroNetwork.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="BPNetwork.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="AENetwork.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuroLayer.h">
       <Filter>nn</Filter>
     </ClInclude>
   </ItemGroup>
@@ -33,12 +41,21 @@
     <Filter Include="nn">
       <UniqueIdentifier>{9796074e-8740-4c15-a584-80fd406051bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{2b5795b0-bf08-493f-bc06-e4686219cc48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network">
+      <UniqueIdentifier>{494bc148-681e-4929-83d8-90b1d48ce9fa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Layer.cpp">
-      <Filter>nn</Filter>
+    <ClCompile Include="BPNetwork.cpp">
+      <Filter>network</Filter>
     </ClCompile>
-    <ClCompile Include="Network.cpp">
+    <ClCompile Include="AENetwork.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="NeuroLayer.cpp">
       <Filter>nn</Filter>
     </ClCompile>
   </ItemGroup>

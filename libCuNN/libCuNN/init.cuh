@@ -7,8 +7,11 @@
 #include <device_launch_parameters.h>
 #include <device_functions.h>
 
+#ifndef _CUNN_BASE_TYPE_H_
+#define _CUNN_BASE_TYPE_H_
 typedef float real;
 typedef unsigned int count;
+#endif
 
 count cudaGetGD(count pn);
 

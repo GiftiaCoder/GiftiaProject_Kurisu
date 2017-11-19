@@ -21,6 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E2A0F917-EA3D-4EEF-B6EF-8AEBD8D50C3A}</ProjectGuid>
     <RootNamespace>libCuNN</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -43,10 +44,10 @@
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -153,18 +154,21 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
   <ItemGroup>
     <CudaCompile Include="init.cu" />
     <CudaCompile Include="libs.cu" />
-    <CudaCompile Include="main.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AENetwork.h" />
+    <ClInclude Include="BPNetwork.h" />
+    <ClInclude Include="GenerableNeuroNetwork.h" />
     <ClInclude Include="init.cuh" />
-    <ClInclude Include="Layer.h" />
+    <ClInclude Include="NeuroLayer.h" />
     <ClInclude Include="libs.cuh" />
-    <ClInclude Include="Network.h" />
+    <ClInclude Include="NeuroNetwork.h" />
     <ClInclude Include="util.cuh" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Layer.cpp" />
-    <ClCompile Include="Network.cpp" />
+    <ClCompile Include="AENetwork.cpp" />
+    <ClCompile Include="BPNetwork.cpp" />
+    <ClCompile Include="NeuroLayer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

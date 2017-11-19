@@ -113,23 +113,26 @@ __global__ void cudaCopyMergeToGrad(real merge[], real grad[], count input_num, 
 void TrainTopLayer(real input[], real output[], real target[], real weight[], real bias[], count input_num, count output_num, real gradin[], real gradout[], real merge[], real study_rate) {
 	count weight_num = input_num * output_num;
 
-	cudaGetGradTop<<<cudaGetGD(output_num), cudaGetBD(output_num) >> >(output, target, gradin, output_num);
-	cudaTrainWeight<<<cudaGetGD(weight_num), cudaGetBD(weight_num) >> >(input, gradin, weight, input_num, output_num, weight_num, study_rate);
-	cudaTrainBias<<<cudaGetGD(output_num), cudaGetBD(output_num) >> >(gradin, bias, output_num, study_rate);
+	cudaGetGradTop<<<cudaGetGD(output_num), cudaGetBD(output_num)>>>(output, target, gradin, output_num);
+	cudaTrainWeight<<<cudaGetGD(weight_num), cudaGetBD(weight_num)>>>(input, gradin, weight, input_num, output_num, weight_num, study_rate);
+	cudaTrainBias<<<cudaGetGD(output_num), cudaGetBD(output_num)>>>(gradin, bias, output_num, study_rate);
 
-	cudaGetGrad << <cudaGetGD(weight_num), cudaGetBD(weight_num) >> >(gradin, weight, merge, input_num, output_num, weight_num);
+	cudaGetGrad<<<cudaGetGD(weight_num), cudaGetBD(weight_num)>>>(gradin, weight, merge, input_num, output_num, weight_num);
 	MergePlus(merge, input_num, output_num);
-	cudaCopyMergeToGrad << <cudaGetGD(output_num), cudaGetBD(output_num) >> >(merge, gradout, input_num, output_num);
+	cudaCopyMergeToGrad<<<cudaGetGD(output_num), cudaGetBD(output_num)>>>(merge, gradout, input_num, output_num);
 }
 
 void TrainHiddenLayer(real input[], real weight[], real gradin[], real bias[], count input_num, count output_num, real gradout[], real merge[], real study_rate) {
 	count weight_num = input_num * output_num;
 
-	cudaTrainWeight << <cudaGetGD(weight_num), cudaGetBD(weight_num) >> >(input, gradin, weight, input_num, output_num, weight_num, study_rate);
-	cudaTrainBias << <cudaGetGD(output_num), cudaGetBD(output_num) >> >(gradin, bias, output_num, study_rate);
+	cudaTrainWeight<<<cudaGetGD(weight_num), cudaGetBD(weight_num)>>>(input, gradin, weight, input_num, output_num, weight_num, study_rate);
+	cudaTrainBias<<<cudaGetGD(output_num), cudaGetBD(output_num)>>>(gradin, bias, output_num, study_rate);
 
-	cudaGetGrad << <cudaGetGD(weight_num), cudaGetBD(weight_num) >> >(gradin, weight, merge, input_num, output_num, weight_num);
+	cudaGetGrad<<<cudaGetGD(weight_num), cudaGetBD(weight_num)>>>(gradin, weight, merge, input_num, output_num, weight_num);
 	MergePlus(merge, input_num, output_num);
-	cudaCopyMergeToGrad << <cudaGetGD(output_num), cudaGetBD(output_num) >> >(merge, gradout, input_num, output_num);
+	cudaCopyMergeToGrad<<<cudaGetGD(output_num), cudaGetBD(output_num)>>>(merge, gradout, input_num, output_num);
 }
 
+void GetTopGrad(real output[], real target[], real grad[], count output_num) {
+	cudaGetGradTop<<<cudaGetGD(output_num), cudaGetBD(output_num)>>>(output, target, grad, output_num);
+}
