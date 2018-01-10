@@ -41,7 +41,8 @@ __global__ void cu_output(real merge[], real bias[], real output[], size_t input
 	size_t thread_idx = blockDim.x * blockIdx.x + threadIdx.x;
 	while (thread_idx < output_num)
 	{
-		output[thread_idx] = (merge[thread_idx * input_num] + bias[thread_idx]);
+		real out = merge[thread_idx * input_num] + bias[thread_idx];
+		output[thread_idx] = (1.014 * tanh(out)) + (0.037 * out);
 
 		thread_idx += thread_num;
 	}
