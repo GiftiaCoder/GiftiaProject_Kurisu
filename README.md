@@ -1,2 +1,2 @@
 # GiftiaProject_Kurisu
-An OO NeuroNetwork framework written in CUDA/C++
+A NeuroNetwork demo written in CUDA/C++
