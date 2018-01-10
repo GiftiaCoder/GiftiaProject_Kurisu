@@ -8,7 +8,7 @@ SAELayer::SAELayer(size_t inputNum, size_t outputNum) :
     m_DeNum(inputNum),
     m_Merge(inputNum * outputNum)
 {
-    // do nothing
+    // TODO set rand weights
 }
 
 real *SAELayer::encode(real *input)

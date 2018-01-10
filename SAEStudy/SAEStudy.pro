@@ -28,7 +28,8 @@ SOURCES += \
     glimgwidget.cpp \
     nntrainthread.cpp \
     saenetwork.cpp \
-    saelayer.cpp
+    saelayer.cpp \
+    imagehelper.cpp
 
 HEADERS += \
     glimgwidget.h \
@@ -36,7 +37,9 @@ HEADERS += \
     libcu.h \
     saenetwork.h \
     saelayer.h \
-    config.h
+    config.h \
+    FreeImage.h \
+    imagehelper.h
 
 FORMS +=
 
@@ -50,3 +53,14 @@ win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/./liblibcu.a
 else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/./liblibcu.a
 else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/./libcu.lib
 else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/./libcu.lib
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/./ -lFreeImage
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/./ -lFreeImaged
+
+INCLUDEPATH += $$PWD/.
+DEPENDPATH += $$PWD/.
+
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/./libFreeImage.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/./libFreeImaged.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/./FreeImage.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/./FreeImaged.lib

@@ -61,15 +61,13 @@ void calculate_merge(real merge[], size_t block_size, size_t block_num)
 	size_t remainder = block_size & 1;
 	size_t merge_num = block_size >> 1;
 
-	while (true)
+	while (merge_num)
 	{
 		cu_merge_output<<<get_block_num(merge_num * block_num), 1024>>>(merge, block_size, merge_num, remainder, block_num);
 
 		remainder = (merge_num += remainder) & 1;
-		if ((merge_num >>= 1) == 0)
-		{
-			break;
-		}
+		
+		merge_num >>= 1; // merge_num /= 2;
 	}
 }
 

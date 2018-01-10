@@ -48,6 +48,22 @@ private:
     real **m_ppTexsData;
     GLuint *m_pTexs;
     int m_TexNum;
+
+    // image path
+    char m_SampleDir[1024];
+
+private:
+    class SampleLoaderThread : public QThread
+    {
+    public:
+        SampleLoaderThread(NNTrainThread *pParent);
+
+    public:
+       virtual void run() override;
+
+    private:
+        NNTrainThread *m_pParent;
+    };
 };
 
 #endif // NNTRAINTHREAD_H
