@@ -1,6 +1,8 @@
 #ifndef IMAGEHELPER_H
 #define IMAGEHELPER_H
 
+#include "libcu.h"
+
 class ImageHelper
 {
 public:

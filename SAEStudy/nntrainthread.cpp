@@ -5,6 +5,8 @@
 
 #include "imagehelper.h"
 
+#include <iostream>
+
 NNTrainThread::NNTrainThread(QWidget *pWidget, GLuint *pTexs, real **ppTexData, int texNum, const char *sampleDir) :
     m_pWidget(pWidget), m_pTexs(pTexs), m_TexNum(texNum), m_ppTexsData(ppTexData),
     m_Network(SAENETWORK_INPUT_NUM, SAENETWORK_LAYER_NUM, SAENETWORK_NEURO_NUM),
@@ -12,8 +14,8 @@ NNTrainThread::NNTrainThread(QWidget *pWidget, GLuint *pTexs, real **ppTexData, 
 {
     for (int i = 0; i < TRAIN_SET_SIZE; ++i)
     {
-        m_ppTrainSet[i] = cuda_malloc(IMAGE_SIZE);
-        m_ppWaitSet[i] = cuda_malloc(IMAGE_SIZE);
+        m_ppTrainSet[i] = (real *)cuda_malloc(IMAGE_SIZE);
+        m_ppWaitSet[i] = (real *)cuda_malloc(IMAGE_SIZE);
     }
 
     strcpy_s(m_SampleDir, sampleDir);
@@ -47,12 +49,14 @@ void NNTrainThread::run()
         }
 
         // train
+        std::cout << __FUNCSIG__ << "\t" << "train" << std::endl;
         for (int trainCounter = 0; trainCounter < TRAIN_SET_SIZE; ++trainCounter)
         {
             m_Network.train(m_ppTrainSet[rand() % TRAIN_SET_SIZE], STUDY_RATE);
         }
 
         // display
+        std::cout << __FUNCSIG__ << "\t" << "display" << std::endl;
         for (int idx = 0; idx < m_TexNum; ++idx)
         {
             gl_set_texture(m_pTexs[idx],
@@ -72,7 +76,7 @@ void NNTrainThread::loadRandomImage()
     }
 
     // load random img to train wait set
-    real *pHostBuff = cuda_malloc_host(IMAGE_SIZE);
+    real *pHostBuff = (real *)cuda_malloc_host(IMAGE_SIZE);
 
     QDir dir(m_SampleDir);
     dir.setFilter(QDir::Files | QDir::NoSymLinks);

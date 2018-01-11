@@ -1,6 +1,7 @@
 #include "imagehelper.h"
 
 #include "FreeImage.h"
+#include "config.h"
 
 void ImageHelper::loadImage(const char *imgPath, real *pBuff)
 {

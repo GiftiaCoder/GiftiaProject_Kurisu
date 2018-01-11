@@ -29,7 +29,8 @@ SOURCES += \
     nntrainthread.cpp \
     saenetwork.cpp \
     saelayer.cpp \
-    imagehelper.cpp
+    imagehelper.cpp \
+    config.cpp
 
 HEADERS += \
     glimgwidget.h \
