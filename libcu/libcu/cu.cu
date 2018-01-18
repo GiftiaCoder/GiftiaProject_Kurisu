@@ -43,3 +43,8 @@ void cuda_device_to_device(void *dst, void *src, size_t size)
 {
 	cudaMemcpy(dst, src, size, cudaMemcpyDeviceToDevice);
 }
+
+const char *cuda_get_last_error()
+{
+	return cudaGetErrorString(cudaGetLastError());
+}

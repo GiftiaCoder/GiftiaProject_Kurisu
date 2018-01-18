@@ -21,6 +21,8 @@ __declspec(dllexport) void cuda_host_to_device(void *dst, void *src, size_t size
 __declspec(dllexport) void cuda_device_to_host(void *dst, void *src, size_t size);
 __declspec(dllexport) void cuda_device_to_device(void *dst, void *src, size_t size);
 
+__declspec(dllexport) const char *cuda_get_last_error();
+
 template<typename T>
 class cu_array
 {
