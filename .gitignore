@@ -4,3 +4,17 @@
 *.ptx
 *.cubin
 *.fatbin
+*.dll
+*.pdb
+*.lib
+*.exp
+*.tlog
+*.log
+*.obj
+*.db
+*.suo
+*.deps
+*.cache
+*.exe
+*.iobj
+*.ipdb

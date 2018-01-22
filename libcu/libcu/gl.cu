@@ -11,41 +11,43 @@
 
 #include <stdio.h>
 
-bool gl_set_texture(GLuint texIdx, void *data, GLuint size, char *errmsg)
+static cudaError_t gl_set_texture(GLuint texIdx, const void *data, size_t size, cudaGraphicsResource_t *resource, char *errmsg)
 {
 	cudaError_t err;
-
-	cudaGraphicsResource_t resource;
-	if ((err = cudaGraphicsGLRegisterImage(&resource, texIdx, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard)) != cudaSuccess)
+	
+	if ((err = cudaGraphicsGLRegisterImage(resource, texIdx, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard)) != cudaSuccess)
 	{
 		if (errmsg)
 		{
 			sprintf(errmsg, "<%s>%s", "cudaGraphicsGLRegisterImage", cudaGetErrorString(err));
 		}
-		return false;
+		return err;
 	}
 
-	if ((err = cudaGraphicsMapResources(1, &resource)) != cudaSuccess)
+	if ((err = cudaGraphicsMapResources(1, resource)) != cudaSuccess)
 	{
 		if (errmsg)
 		{
 			sprintf(errmsg, "<%s>%s", "cudaGraphicsMapResources", cudaGetErrorString(err));
 		}
-		cudaGraphicsUnregisterResource(resource);
-		return false;
+		return err;
 	}
 
-	cudaArray_t dst;
-	if ((err = cudaGraphicsSubResourceGetMappedArray(&dst, resource, 0, 0)) != cudaSuccess)
+	cudaArray_t dst = 0;
+	if ((err = cudaGraphicsSubResourceGetMappedArray(&dst, *resource, 0, 0)) != cudaSuccess)
 	{
 		if (errmsg)
 		{
 			sprintf(errmsg, "<%s>%s", "cudaGraphicsSubResourceGetMappedArray", cudaGetErrorString(err));
 		}
-		cudaGraphicsUnmapResources(1, &resource);
-		cudaGraphicsUnregisterResource(resource);
-		return false;
+		return err;
 	}
+
+	//cudaChannelFormatDesc d;
+	//cudaExtent e;
+	//unsigned int f;
+	//cudaArrayGetInfo(&d, &e, &f, dst);
+	//printf("(%d, %d, %d)(%d, %d, %d, %d), %d\n", e.width, e.height, e.depth, d.x, d.y, d.z, d.w, d.f);
 
 	if ((err = cudaMemcpyToArray(dst, 0, 0, data, size, cudaMemcpyDeviceToDevice)) != cudaSuccess)
 	{
@@ -53,12 +55,25 @@ bool gl_set_texture(GLuint texIdx, void *data, GLuint size, char *errmsg)
 		{
 			sprintf(errmsg, "<%s>%s", "cudaMemcpyToArray", cudaGetErrorString(err));
 		}
-		cudaGraphicsUnmapResources(1, &resource);
-		cudaGraphicsUnregisterResource(resource);
-		return false;
+		return err;
 	}
 
+	return err;
+}
+
+bool gl_set_texture(GLuint texIdx, const void *data, size_t size, char *errmsg)
+{
+	cudaThreadSynchronize();
+
+	cudaGraphicsResource_t resource = 0;
+	
+	bool ret = (gl_set_texture(texIdx, data, size, &resource, errmsg) == cudaSuccess);
+
 	cudaGraphicsUnmapResources(1, &resource);
-	cudaGraphicsUnregisterResource(resource);
-	return true;
+	if (resource)
+	{
+		cudaGraphicsUnregisterResource(resource);
+	}
+
+	return ret;
 }

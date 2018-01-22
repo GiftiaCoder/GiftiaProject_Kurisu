@@ -3,23 +3,42 @@
 #define __LIB_CU_H__
 
 typedef double real;
+
 __declspec(dllexport) void calculate_layer_output(real input[], real weight[], real bias[], real output[], size_t input_num, size_t output_num, real merge[]);
-__declspec(dllexport) void calculate_layer_grad(real output[], real target[], real grad[], size_t output_num);
+__declspec(dllexport) void calculate_layer_grad(real output[], real target[], real grad[], real study_rate, size_t output_num);
 __declspec(dllexport) void calculate_layer_grad(real gradin[], real weight[], real grad[], size_t input_num, size_t output_num, real merge[]);
 __declspec(dllexport) void calculate_layer_train(real input[], real grad[], real weight[], real bias[], size_t input_num, size_t output_num, real study_rate);
+
+enum enum_translate_type
+{
+	float_to_double,
+	double_to_float,
+	real_to_double,
+	real_to_float,
+	double_to_real,
+	float_to_real, 
+};
+__declspec(dllexport) void translate_data_format(void *dst, const void *src, size_t count, enum_translate_type type);
+
+__declspec(dllexport) void set_value(real data[], size_t count, real val);
+__declspec(dllexport) void set_rand_value(real data[], size_t count);
 
 #include <Windows.h>
 #include <gl\GL.h>
 #include <gl\GLU.h>
-__declspec(dllexport) bool gl_set_texture(GLuint texIdx, void *data, GLuint size, char *errmsg = nullptr);
+__declspec(dllexport) bool gl_set_texture(GLuint texIdx, const void *data, size_t size, char *errmsg = nullptr);
+
+__declspec(dllexport) void set_cuda_device(int dev);
 
 __declspec(dllexport) void *cuda_malloc(size_t size);
 __declspec(dllexport) void *cuda_malloc_host(size_t size);
 __declspec(dllexport) void cuda_free(void *ptr);
-__declspec(dllexport) void cuda_host_to_host(void *dst, void *src, size_t size);
-__declspec(dllexport) void cuda_host_to_device(void *dst, void *src, size_t size);
-__declspec(dllexport) void cuda_device_to_host(void *dst, void *src, size_t size);
-__declspec(dllexport) void cuda_device_to_device(void *dst, void *src, size_t size);
+
+enum enum_cuda_memcpy_direction
+{
+	host_to_host, host_to_device, device_to_host, device_to_device, 
+};
+__declspec(dllexport) void cuda_memcpy(void *dst, const void *src, size_t size, enum_cuda_memcpy_direction direction);
 
 __declspec(dllexport) const char *cuda_get_last_error();
 
@@ -58,13 +77,13 @@ public:
 
 	inline cu_array<T>& set()
 	{
-		cuda_host_to_device(cb, hb, sz * sizeof(T));
+		cuda_memcpy(cb, hb, sz * sizeof(T), host_to_device);
 		return *this;
 	}
 
 	inline cu_array<T>& get()
 	{
-		cuda_device_to_host(hb, cb, sz * sizeof(T));
+		cuda_memcpy(hb, cb, sz * sizeof(T), device_to_host);
 		return *this;
 	}
 
