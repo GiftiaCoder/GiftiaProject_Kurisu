@@ -44,6 +44,6 @@ void CSAENetwork::Train(real *input, real studyRate)
 		m_pLayers[layIdx].Train(input, studyRate);
 
 		input = m_pLayers[layIdx].GetEncode();
-		studyRate *= CConfig::STUDY_RATE_DECREASE_RATE;
+		//studyRate *= CConfig::STUDY_RATE_DECREASE_RATE;
 	}
 }

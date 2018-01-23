@@ -45,13 +45,14 @@ __global__ void cu_output(real merge[], real bias[], real output[], size_t input
 	while (thread_idx < output_num)
 	{
 		real out = merge[thread_idx * input_num] + bias[thread_idx];
-		//output[thread_idx] = ((real)1.7159 * tanh(out * TWO_DIV_THREE));
-		real tout = output[thread_idx] = ((real)1.7159 * tanh(out * TWO_DIV_THREE));
-		if (__isnan(tout))
-		{
-			tout = out > 0 ? (real)1.7159 : (real)-1.7159;
-		}
-		output[thread_idx] = tout;
+		output[thread_idx] = ((real)1.7159 * tanh(out * TWO_DIV_THREE));
+		//real tout = ((real)1.7159 * tanh(out * TWO_DIV_THREE));
+		//if (__isnan(tout))
+		//{
+		//	tout = out > 0 ? (real)1.7159 : (real)-1.7159;
+		//}
+		//output[thread_idx] = tout;
+
 		thread_idx += thread_num;
 	}
 }
@@ -59,7 +60,7 @@ __global__ void cu_output(real merge[], real bias[], real output[], size_t input
 #define THREAD_NUM_PER_BLOCK (1024)
 size_t get_block_num(size_t oprand_num)
 {
-	const static size_t max_block_num = 32 * 1024;
+	const static size_t max_block_num = 42 * 1024;
 	oprand_num = oprand_num / THREAD_NUM_PER_BLOCK;
 	++oprand_num;
 	return oprand_num < max_block_num ? oprand_num : max_block_num;
@@ -179,38 +180,46 @@ void calculate_layer_train(real input[], real grad[], real weight[], real bias[]
 }
 
 template<typename srctype, typename dsttype>
-__global__ void cuda_translate_data_format(void *dst, const void *src, size_t count)
+__global__ void cuda_translate_data_format(void *dst, const void *src, size_t pixelNum)
 {
 	size_t thread_num = gridDim.x * blockDim.x;
 	size_t thread_idx = blockDim.x * blockIdx.x + threadIdx.x;
-	while (thread_idx < count)
+	while (thread_idx < pixelNum)
 	{
-		((dsttype *)dst)[thread_idx] = (((dsttype)((const srctype *)src)[thread_idx]) + (dsttype)1.0) * (dsttype)0.5;
+		if ((thread_idx & 0x03) != 3)
+		{
+			((dsttype *)dst)[thread_idx] = (((dsttype)((const srctype *)src)[((thread_idx >> 2) * 3) + (thread_idx & 0x03)]) + (dsttype)1.0) * (dsttype)0.5;
+		}
+		else
+		{
+			((dsttype *)dst)[thread_idx] = (dsttype)0;
+		}
 		thread_idx += thread_num;
 	}
 }
 
-void translate_data_format(void *dst, const void *src, size_t count, enum_translate_type type)
+void translate_data_format(void *dst, const void *src, size_t pixelNum, enum_translate_type type)
 {
+	pixelNum *= 4;
 	switch (type)
 	{
 	case float_to_double:
-		cuda_translate_data_format<float, double><<<get_block_num(count), THREAD_NUM_PER_BLOCK >>>(dst, src, count);
+		cuda_translate_data_format<float, double><<<get_block_num(pixelNum), THREAD_NUM_PER_BLOCK >>>(dst, src, pixelNum);
 		break;
 	case double_to_float:
-		cuda_translate_data_format<double, float><<<get_block_num(count), THREAD_NUM_PER_BLOCK >>>(dst, src, count);
+		cuda_translate_data_format<double, float><<<get_block_num(pixelNum), THREAD_NUM_PER_BLOCK >>>(dst, src, pixelNum);
 		break;
 	case real_to_double:
-		cuda_translate_data_format<real, double><<<get_block_num(count), THREAD_NUM_PER_BLOCK >>>(dst, src, count);
+		cuda_translate_data_format<real, double><<<get_block_num(pixelNum), THREAD_NUM_PER_BLOCK >>>(dst, src, pixelNum);
 		break;
 	case real_to_float:
-		cuda_translate_data_format<real, float><<<get_block_num(count), THREAD_NUM_PER_BLOCK >>>(dst, src, count);
+		cuda_translate_data_format<real, float><<<get_block_num(pixelNum), THREAD_NUM_PER_BLOCK >>>(dst, src, pixelNum);
 		break;
 	case double_to_real:
-		cuda_translate_data_format<double, real><<<get_block_num(count), THREAD_NUM_PER_BLOCK >>>(dst, src, count);
+		cuda_translate_data_format<double, real><<<get_block_num(pixelNum), THREAD_NUM_PER_BLOCK >>>(dst, src, pixelNum);
 		break;
 	case float_to_real:
-		cuda_translate_data_format<float, real><<<get_block_num(count), THREAD_NUM_PER_BLOCK >>>(dst, src, count);
+		cuda_translate_data_format<float, real><<<get_block_num(pixelNum), THREAD_NUM_PER_BLOCK >>>(dst, src, pixelNum);
 		break;
 	default:
 		break;

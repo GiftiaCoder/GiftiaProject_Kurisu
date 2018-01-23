@@ -3,6 +3,7 @@
 
 #include "libcu.h"
 #include "SAENetwork.h"
+#include "Config.h"
 
 #include <vector>
 #include <string>
@@ -12,6 +13,7 @@
 #define GRID_HEIGHT (6)
 #define ENCODE_DATA_NUM (GRID_WIDTH * GRID_HEIGHT / 2)
 #define DISPLAY_PICTURE_DIR ("E:\\Resources\\view\\*.jpg")
+#define DISPLAY_PICTURE_DATA_LEN (CConfig::SAENETWORK_INPUT_PIXEL_NUM * 4)
 
 class CGLImgFrame :
 	public CFrameWnd

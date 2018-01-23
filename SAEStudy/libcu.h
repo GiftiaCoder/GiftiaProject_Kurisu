@@ -12,15 +12,19 @@ __declspec(dllimport) void calculate_layer_train(real input[], real grad[], real
 #include <Windows.h>
 #include <gl\GL.h>
 #include <gl\GLU.h>
-__declspec(dllimport) bool gl_set_texture(GLuint texIdx, void *data, GLuint size, char *errmsg = nullptr);
+__declspec(dllimport) bool gl_set_texture(GLuint texIdx, const void *data, size_t size, char *errmsg = nullptr);
+
+__declspec(dllimport) void set_cuda_device(int dev);
 
 __declspec(dllimport) void *cuda_malloc(size_t size);
 __declspec(dllimport) void *cuda_malloc_host(size_t size);
 __declspec(dllimport) void cuda_free(void *ptr);
-__declspec(dllimport) void cuda_host_to_host(void *dst, void *src, size_t size);
-__declspec(dllimport) void cuda_host_to_device(void *dst, void *src, size_t size);
-__declspec(dllimport) void cuda_device_to_host(void *dst, void *src, size_t size);
-__declspec(dllimport) void cuda_device_to_device(void *dst, void *src, size_t size);
+__declspec(dllimport) void cuda_host_to_host(void *dst, const void *src, size_t size);
+__declspec(dllimport) void cuda_host_to_device(void *dst, const void *src, size_t size);
+__declspec(dllimport) void cuda_device_to_host(void *dst, const void *src, size_t size);
+__declspec(dllimport) void cuda_device_to_device(void *dst, const void *src, size_t size);
+
+__declspec(dllimport) const char *cuda_get_last_error();
 
 template<typename T>
 class cu_array
@@ -29,10 +33,10 @@ class cu_array
 	size_t sz;
 
 public:
-	cu_array(size_t size) :
+    cu_array(size_t size, bool use_host = false) :
 		sz(size),
 		cb((T *)cuda_malloc(size * sizeof(T))),
-		hb((T *)cuda_malloc_host(size * sizeof(T))) {}
+        hb(use_host ? (T *)cuda_malloc_host(size * sizeof(T)) : nullptr) {}
 
 	~cu_array()
 	{

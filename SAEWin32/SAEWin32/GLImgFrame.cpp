@@ -1,19 +1,18 @@
 #include "GLImgFrame.h"
 
 #include "Util.h"
-#include "Config.h"
 
 #include <iostream>
 
 CGLImgFrame::CGLImgFrame() :
-	m_pTempTexData((float *)cuda_malloc(CConfig::SAENETWORK_INPUT_NUM * sizeof(float))),
+	m_pTempTexData((float *)cuda_malloc(DISPLAY_PICTURE_DATA_LEN * sizeof(float))),
 	m_TrainImgPathList(0),
 	m_IsWaitSetUpdated(false),
 	m_ppTrainSet(new real*[CConfig::TRAIN_SET_SIZE]), m_ppWaitSet(new real*[CConfig::TRAIN_SET_SIZE]),
 	m_Network(CConfig::SAENETWORK_INPUT_NUM, CConfig::SAENETWORK_LAYER_NUM, CConfig::SAENETWORK_NEURO_NUM),
 	m_IsWndAlive(true)
 {
-	Create(NULL, __FUNCSIG__);
+	Create(NULL, "SAEGlFrame");
 	memset(m_Texs, 0, sizeof(m_Texs));
 	memset(m_EncodeData, 0, sizeof(m_EncodeData));
 
@@ -135,10 +134,10 @@ void CGLImgFrame::InitGLTextureData()
 
 			translate_data_format(m_pTempTexData,
 				m_EncodeData[i],
-				CConfig::SAENETWORK_INPUT_NUM,
+				CConfig::SAENETWORK_INPUT_PIXEL_NUM,
 				real_to_float);
 
-			gl_set_texture(m_Texs[x][y], m_pTempTexData, CConfig::SAENETWORK_INPUT_NUM * sizeof(float));
+			gl_set_texture(m_Texs[x][y], m_pTempTexData, DISPLAY_PICTURE_DATA_LEN * sizeof(float));
 
 			++i;
 		}
@@ -168,14 +167,15 @@ void CGLImgFrame::LoadImageProc()
 	{
 		Sleep(CConfig::LOAD_IMAGE_PERIOD);
 		LoadRandTextures();
-		printf("[TID:%d]traning set end loading\n", GetCurrentThreadId());
 	}
 }
 
 void CGLImgFrame::TrainNNProc()
 {
 	int l = 0;
-	while (GetSafeHwnd())
+	real studyRate = CConfig::STUDY_RATE;
+	DWORD startTime = GetTickCount();
+	while (true)
 	//while (m_IsWndAlive)
 	{
 		if (m_IsWaitSetUpdated)
@@ -196,12 +196,22 @@ void CGLImgFrame::TrainNNProc()
 
 		for (int i = 0; i < CConfig::TRAIN_SET_SIZE; ++i)
 		{
-			m_Network.Train(m_ppTrainSet[i], CConfig::STUDY_RATE);
+			m_Network.Train(m_ppTrainSet[i], studyRate);
 		}
+		//studyRate *= CConfig::STUDY_RATE_DECREASE_RATE;
 
-		printf("end training loop: %d\n", ++l);
+		DWORD endTime = GetTickCount();
+		printf("[TIME:%d]end training loop: %d\n", GetTickCount() - startTime, ++l);
+		startTime = endTime;
 
-		SendMessage(WM_PAINT);
+		if (GetSafeHwnd())
+		{
+			SendMessage(WM_PAINT);
+		}
+		else
+		{
+			break;
+		}
 	}
 }
 
@@ -222,6 +232,7 @@ void CGLImgFrame::LoadRandTextures()
 
 	cuda_free(pTempHostBuff);
 
+	printf("[TID:%d]traning set end loading\n", GetCurrentThreadId());
 	m_IsWaitSetUpdated = true;
 }
 
@@ -240,9 +251,9 @@ void CGLImgFrame::SetDecodeTexData()
 			//printf("\n");
 			translate_data_format(m_pTempTexData, 
 				m_Network.Decode(m_Network.Encode(m_EncodeData[i])),
-				CConfig::SAENETWORK_INPUT_NUM, 
+				CConfig::SAENETWORK_INPUT_PIXEL_NUM, 
 				real_to_float);
-			gl_set_texture(m_Texs[x][y], m_pTempTexData, CConfig::SAENETWORK_INPUT_NUM * sizeof(float));
+			gl_set_texture(m_Texs[x][y], m_pTempTexData, DISPLAY_PICTURE_DATA_LEN * sizeof(float));
 			++i;
 		}
 	}
@@ -315,7 +326,7 @@ void CGLImgFrame::GLInitTexture(GLuint tex)
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_ARB, 96, 96, 0, GL_BGRA_EXT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F_ARB, 96, 96, 0, GL_BGRA_EXT, GL_FLOAT, NULL);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 

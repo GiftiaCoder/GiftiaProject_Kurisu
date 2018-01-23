@@ -18,7 +18,7 @@ enum enum_translate_type
 	double_to_real,
 	float_to_real, 
 };
-__declspec(dllexport) void translate_data_format(void *dst, const void *src, size_t count, enum_translate_type type);
+__declspec(dllexport) void translate_data_format(void *dst, const void *src, size_t pixelNum, enum_translate_type type);
 
 __declspec(dllexport) void set_value(real data[], size_t count, real val);
 __declspec(dllexport) void set_rand_value(real data[], size_t count);

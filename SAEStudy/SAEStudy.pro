@@ -26,7 +26,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     glimgwidget.cpp \
-    nntrainthread.cpp \
     saenetwork.cpp \
     saelayer.cpp \
     imagehelper.cpp \
@@ -34,7 +33,6 @@ SOURCES += \
 
 HEADERS += \
     glimgwidget.h \
-    nntrainthread.h \
     libcu.h \
     saenetwork.h \
     saelayer.h \

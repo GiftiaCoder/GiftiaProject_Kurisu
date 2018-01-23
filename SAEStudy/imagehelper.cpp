@@ -14,7 +14,7 @@ void ImageHelper::loadImage(const char *imgPath, real *pBuff)
         pBuff[i + 0] = ((real)pData[j + 2]) / (real)256.0;
         pBuff[i + 1] = ((real)pData[j + 1]) / (real)256.0;
         pBuff[i + 2] = ((real)pData[j + 0]) / (real)256.0;
-        pBuff[i + 3] = (real)1.0;
+        pBuff[i + 3] = (real)0.5;
     }
     FreeImage_Unload(pBitmap);
 }

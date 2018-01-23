@@ -5,6 +5,7 @@
 class CConfig
 {
 public:
+	const static size_t SAENETWORK_INPUT_PIXEL_NUM;
 	const static size_t SAENETWORK_INPUT_NUM;
 	const static size_t SAENETWORK_LAYER_NUM;
 	const static size_t SAENETWORK_NEURO_NUM[];

@@ -1,32 +1,46 @@
 #include "glimgwidget.h"
 
 #include <iostream>
-#include <QDir>
 
 #include <gl/GL.h>
 #include <gl/GLU.h>
 
+#include <QDir>
+
 #include "imagehelper.h"
-#include "nntrainthread.h"
 
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glu32.lib")
 #pragma comment(lib, "user32.lib")
 
 GLImgWidget::GLImgWidget(QWidget *parent, Qt::WindowFlags flags) :
-    QOpenGLWidget(parent, flags)
+    QOpenGLWidget(parent, flags),
+    m_ppTrainSet(new real*[TRAIN_SET_SIZE]), m_ppWaitSet(new real*[TRAIN_SET_SIZE]), m_IsWaitSetUpdated(false),
+    m_Network(SAENETWORK_INPUT_NUM, SAENETWORK_LAYER_NUM, SAENETWORK_NEURO_NUM)
 {
     setWindowTitle("GLImgDisplayer");
 }
 
 GLImgWidget::~GLImgWidget()
 {
-    // TODO
+    for (int i = 0; i < TRAIN_SET_SIZE; ++i)
+    {
+        cuda_free(m_ppTrainSet[i]);
+        cuda_free(m_ppWaitSet[i]);
+    }
+    delete[] m_ppTrainSet;
+    delete[] m_ppWaitSet;
+    for (int i = 0; i < SHOW_SAMPLE_NUM; ++i)
+    {
+        cuda_free(m_pEncodeData[i]);
+    }
 }
 
 void GLImgWidget::initializeGL()
 {
     initializeOpenGLFunctions();
+
+    set_cuda_device(0);
 
     glShadeModel(GL_SMOOTH);
 
@@ -37,36 +51,47 @@ void GLImgWidget::initializeGL()
     glDepthFunc(GL_LEQUAL);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-    glEnable(GL_TEXTURE_2D);
-
     // textures
     std::cout << __FUNCSIG__ << "\t" << "prepare textures" << std::endl;
+    glEnable(GL_TEXTURE_2D);
     glGenTextures(SHOW_SAMPLE_NUM, m_EncodeTexs);
     glGenTextures(SHOW_SAMPLE_NUM, m_DecodeTexs);
-
-    // init textures data
-    std::cout << __FUNCSIG__ << "\t" << "load texture data" << std::endl;
-    QDir dir(SHOW_DATA_DIR);
-    dir.setFilter(QDir::Files | QDir::NoSymLinks);
-    QFileInfoList &list = dir.entryInfoList();
-
-    real *pData = (real *)cuda_malloc_host(IMAGE_SIZE);
     for (int texIdx = 0; texIdx < SHOW_SAMPLE_NUM; ++texIdx)
     {
         createGLTexture(m_EncodeTexs[texIdx]);
         createGLTexture(m_DecodeTexs[texIdx]);
-
-        ImageHelper::loadImage(list[texIdx].filePath().toLocal8Bit().data(), pData);
-
-        m_pEncodeSet[texIdx] = (real *)cuda_malloc(IMAGE_SIZE);
-        cuda_host_to_device(m_pEncodeSet[texIdx], pData, IMAGE_SIZE);
-        gl_set_texture(m_EncodeTexs[texIdx], m_pEncodeSet[texIdx], IMAGE_SIZE);
     }
-    cuda_free(pData);
 
     // begin training
     std::cout << __FUNCSIG__ << "\t" << "begin train" << std::endl;
-    (new NNTrainThread(this, m_DecodeTexs, m_pEncodeSet, SHOW_SAMPLE_NUM, TRAIN_SET_PATH))->start();
+
+    QDir dir(SHOW_DATA_DIR);
+    dir.setFilter(QDir::Files | QDir::NoSymLinks);
+    QFileInfoList &list = dir.entryInfoList();
+    real *pData = (real *)cuda_malloc_host(IMAGE_SIZE);
+    for (int texIdx = 0; texIdx < SHOW_SAMPLE_NUM; ++texIdx)
+    {
+        ImageHelper::loadImage(list[texIdx].filePath().toLocal8Bit().data(), pData);
+
+        m_pEncodeData[texIdx] = (real *)cuda_malloc(IMAGE_SIZE);
+        cuda_host_to_device(m_pEncodeData[texIdx], pData, IMAGE_SIZE);
+
+        char errmsg[512] = { 0 };
+        gl_set_texture(m_EncodeTexs[texIdx], m_pEncodeData[texIdx], IMAGE_SIZE / 2, errmsg);
+        std::cout << __FUNCSIG__ << "\t" << errmsg << std::endl;
+    }
+    cuda_free((void *)pData);
+
+    for (int i = 0; i < TRAIN_SET_SIZE; ++i)
+    {
+        m_ppTrainSet[i] = (real *)cuda_malloc(IMAGE_SIZE);
+        m_ppWaitSet[i] = (real *)cuda_malloc(IMAGE_SIZE);
+    }
+
+    loadRandomImage();
+
+    (new TrainThread(this))->start();
+    (new SampleLoaderThread(this))->start();
 }
 
 void GLImgWidget::resizeGL(int w, int h)
@@ -99,6 +124,43 @@ void GLImgWidget::paintGL()
             x = 0;
             y += 2;
         }
+    }
+}
+
+void GLImgWidget::networkTrainLoop()
+{
+    while (true)
+    {
+        // exchange train set if wait set is updated
+        if (m_IsWaitSetUpdated)
+        {
+            real **tempSet = m_ppTrainSet;
+            m_ppTrainSet = m_ppWaitSet;
+            m_ppWaitSet = tempSet;
+
+            m_IsWaitSetUpdated = false;
+        }
+
+        // train
+        std::cout << __FUNCSIG__ << "\t" << "train" << std::endl;
+        for (int trainCounter = 0; trainCounter < TRAIN_SET_SIZE; ++trainCounter)
+        {
+            m_Network.train(m_ppTrainSet[rand() % TRAIN_SET_SIZE], STUDY_RATE);
+        }
+
+        // display
+        char errmsg[512] = { 0 };
+        std::cout << __FUNCSIG__ << "\t" << "display" << std::endl;
+        for (int idx = 0; idx < SHOW_SAMPLE_NUM; ++idx)
+        {
+            gl_set_texture(m_DecodeTexs[idx],
+                           m_Network.decode(m_Network.encode(m_pEncodeData[idx])),
+                           IMAGE_SIZE,
+                           errmsg);
+            std::cout << errmsg << std::endl;
+        }
+
+        update();
     }
 }
 
@@ -136,6 +198,59 @@ void GLImgWidget::createGLTexture(GLuint texIdx)
     glBindTexture(GL_TEXTURE_2D, texIdx);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_ARB, 96, 96, 0, GL_BGRA_EXT, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_ARB, 96, 96, 0, GL_BGRA_EXT, GL_DOUBLE, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
+    GL_RGBA16F_ARB;
+}
+
+void GLImgWidget::loadRandomImage()
+{
+    // images has just loaded
+    if (m_IsWaitSetUpdated)
+    {
+        return;
+    }
+
+    // load random img to train wait set
+    real *pHostBuff = (real *)cuda_malloc_host(IMAGE_SIZE);
+
+    QDir dir(TRAIN_SET_PATH);
+    dir.setFilter(QDir::Files | QDir::NoSymLinks);
+
+    QFileInfoList &list = dir.entryInfoList();
+    for (int i = 0; i < TRAIN_SET_SIZE; ++i)
+    {
+        QFileInfo &info = list[rand() % list.size()];
+        ImageHelper::loadImage(info.filePath().toLocal8Bit().data(), pHostBuff);
+        cuda_host_to_device(m_ppWaitSet[i], pHostBuff, IMAGE_SIZE);
+    }
+    m_IsWaitSetUpdated = true;
+
+    cuda_free(pHostBuff);
+}
+
+GLImgWidget::SampleLoaderThread::SampleLoaderThread(GLImgWidget *pParent) :
+    m_pParent(pParent)
+{
+    // do nothing
+}
+
+void GLImgWidget::SampleLoaderThread::run()
+{
+    while (true)
+    {
+        QThread::sleep(5);
+        m_pParent->loadRandomImage();
+    }
+}
+
+GLImgWidget::TrainThread::TrainThread(GLImgWidget *pParent) :
+    m_pParent(pParent)
+{
+    // do nothing
+}
+
+void GLImgWidget::TrainThread::run()
+{
+    m_pParent->networkTrainLoop();
 }
