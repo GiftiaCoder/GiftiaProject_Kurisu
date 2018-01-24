@@ -6,13 +6,14 @@
 
 CGLImgFrame::CGLImgFrame() :
 	m_pTempTexData((float *)cuda_malloc(DISPLAY_PICTURE_DATA_LEN * sizeof(float))),
-	m_TrainImgPathList(0),
+	//m_TrainImgPathList(0),
 	m_IsWaitSetUpdated(false),
 	m_ppTrainSet(new real*[CConfig::TRAIN_SET_SIZE]), m_ppWaitSet(new real*[CConfig::TRAIN_SET_SIZE]),
 	m_Network(CConfig::SAENETWORK_INPUT_NUM, CConfig::SAENETWORK_LAYER_NUM, CConfig::SAENETWORK_NEURO_NUM),
-	m_IsWndAlive(true)
+	m_IsPause(false)
+	//m_IsWndAlive(true)
 {
-	Create(NULL, "SAEGlFrame");
+	Create(NULL, "Lacia_SAE ver0.01");
 	memset(m_Texs, 0, sizeof(m_Texs));
 	memset(m_EncodeData, 0, sizeof(m_EncodeData));
 
@@ -27,16 +28,20 @@ CGLImgFrame::CGLImgFrame() :
 	InitGLEnvironment();
 	InitGLTextureData();
 
-	CFileFind finder;
-	finder.FindFile(CConfig::TRAIN_IMG_PATH);
-	while (finder.FindNextFile())
+	/*CFileFind finder;
+	BOOL hasNext = finder.FindFile(CConfig::TRAIN_IMG_PATH);
+	while(hasNext)
 	{
+		hasNext = finder.FindNextFile();
+		std::cout << finder.GetFilePath().GetString() << std::endl;
 		if (CImageUtil::IsLoadable(finder.GetFilePath().GetString()))
 		{
+			std::cout << "load" << std::endl;
 			m_TrainImgPathList.push_back(finder.GetFilePath().GetString());
 		}
 	}
-	std::cout << m_TrainImgPathList.size() << std::endl;
+	finder.Close();
+	std::cout << m_TrainImgPathList.size() << std::endl;*/
 
 	LoadRandTextures();
 	CreateThread(NULL, 0, TrainNNProc, (LPVOID)this, 0, &m_TrainNNTid);
@@ -165,8 +170,13 @@ void CGLImgFrame::LoadImageProc()
 	while(GetSafeHwnd())
 	//while (m_IsWndAlive)
 	{
-		Sleep(CConfig::LOAD_IMAGE_PERIOD);
-		LoadRandTextures();
+		if (! m_IsPause)
+		{
+			Sleep(CConfig::LOAD_IMAGE_PERIOD);
+			LoadRandTextures();
+			continue;
+		}
+		Sleep(3000);
 	}
 }
 
@@ -178,40 +188,46 @@ void CGLImgFrame::TrainNNProc()
 	while (true)
 	//while (m_IsWndAlive)
 	{
-		if (m_IsWaitSetUpdated)
+		if (!m_IsPause)
 		{
-			real **ppTemp = m_ppTrainSet;
-			m_ppTrainSet = m_ppWaitSet;
-			m_ppWaitSet = ppTemp;
-			
-			m_IsWaitSetUpdated = false;
+			if (m_IsWaitSetUpdated)
+			{
+				real **ppTemp = m_ppTrainSet;
+				m_ppTrainSet = m_ppWaitSet;
+				m_ppWaitSet = ppTemp;
 
-			printf("[TID:%d]traning set end swaping\n", GetCurrentThreadId());
+				m_IsWaitSetUpdated = false;
+
+				printf("[TID:%d]traning set end swaping\n", GetCurrentThreadId());
+			}
+
+			//for (int i = 0; i < ENCODE_DATA_NUM; ++i)
+			//{
+			//	m_Network.Train(m_EncodeData[i], (real)(CConfig::STUDY_RATE * 0.01));
+			//}
+
+			for (int i = 0; i < CConfig::TRAIN_SET_SIZE; ++i)
+			{
+				m_Network.Train(m_ppTrainSet[i], studyRate);
+			}
+			//studyRate *= CConfig::STUDY_RATE_DECREASE_RATE;
+
+			DWORD endTime = GetTickCount();
+			printf("[TIME:%d]end training loop: %d\n", GetTickCount() - startTime, ++l);
+			startTime = endTime;
+
+			if (GetSafeHwnd())
+			{
+				SendMessage(WM_PAINT);
+			}
+			else
+			{
+				break;
+			}
+
+			continue;
 		}
-
-		//for (int i = 0; i < ENCODE_DATA_NUM; ++i)
-		//{
-		//	m_Network.Train(m_EncodeData[i], (real)(CConfig::STUDY_RATE * 0.01));
-		//}
-
-		for (int i = 0; i < CConfig::TRAIN_SET_SIZE; ++i)
-		{
-			m_Network.Train(m_ppTrainSet[i], studyRate);
-		}
-		//studyRate *= CConfig::STUDY_RATE_DECREASE_RATE;
-
-		DWORD endTime = GetTickCount();
-		printf("[TIME:%d]end training loop: %d\n", GetTickCount() - startTime, ++l);
-		startTime = endTime;
-
-		if (GetSafeHwnd())
-		{
-			SendMessage(WM_PAINT);
-		}
-		else
-		{
-			break;
-		}
+		Sleep(3000);
 	}
 }
 
@@ -222,11 +238,15 @@ void CGLImgFrame::LoadRandTextures()
 		return;
 	}
 
+	std::vector<std::string> pathList;
+	LoadImageList(pathList);
+
 	real *pTempHostBuff = (real *)cuda_malloc_host(CConfig::IMAGE_SIZE);
 	
 	for (int i = 0; i < CConfig::TRAIN_SET_SIZE; ++i)
 	{
-		CImageUtil::LoadTexture(m_TrainImgPathList[rand() % m_TrainImgPathList.size()].c_str(), pTempHostBuff);
+		CImageUtil::LoadTexture(pathList[rand() % pathList.size()].c_str(), pTempHostBuff);
+		//CImageUtil::LoadTexture(m_TrainImgPathList[rand() % m_TrainImgPathList.size()].c_str(), pTempHostBuff);
 		cuda_memcpy(m_ppWaitSet[i], pTempHostBuff, CConfig::IMAGE_SIZE, host_to_device);
 	}
 
@@ -309,17 +329,36 @@ void CGLImgFrame::OnSize(UINT nType, int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void CGLImgFrame::OnClose()
+//void CGLImgFrame::OnClose()
+//{
+//	m_IsWndAlive = false;
+//	CFrameWnd::OnClose();
+//}
+
+void CGLImgFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	m_IsWndAlive = false;
-	CFrameWnd::OnClose();
+	switch (nChar)
+	{
+	case VK_SPACE:
+		TrainingPauseOrStart();
+		break;
+	default:
+		break;
+	}
 }
 
 BEGIN_MESSAGE_MAP(CGLImgFrame, CFrameWnd)
 	ON_WM_PAINT()
 	ON_WM_SIZE()
-	ON_WM_CLOSE()
+	ON_WM_KEYDOWN()
+	//ON_WM_CLOSE()
 END_MESSAGE_MAP()
+
+void CGLImgFrame::TrainingPauseOrStart()
+{
+	std::cout << (m_IsPause ? "training start" : "training pause") << std::endl;
+	m_IsPause = (! m_IsPause);
+}
 
 void CGLImgFrame::GLInitTexture(GLuint tex)
 {
@@ -357,4 +396,39 @@ void CGLImgFrame::PaintGLTexture(GLuint tex, int x, int y)
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glPopMatrix();
+}
+
+void CGLImgFrame::LoadImageList(std::vector<std::string> &pathList)
+{
+	CFileFind fileFinder;
+	BOOL hasNextFile = fileFinder.FindFile(CConfig::TRAIN_IMG_PATH);
+	while (hasNextFile)
+	{
+		hasNextFile = fileFinder.FindNextFile();
+
+		const char *path = fileFinder.GetFilePath().GetString();
+		// if path is loadable, put it into the path list
+		if (m_LoadableImageList.find(path) != m_LoadableImageList.end())
+		{
+			pathList.push_back(path);
+		}
+		// if path is unloadable
+		else if (m_UnloadableImageList.find(path) != m_UnloadableImageList.end())
+		{
+			// do nothing
+		}
+		// if path is new, judge it
+		else
+		{
+			if (CImageUtil::IsLoadable(path))
+			{
+				m_LoadableImageList.insert(path);
+				pathList.push_back(path);
+			}
+			else
+			{
+				m_UnloadableImageList.insert(path);
+			}
+		}
+	}
 }

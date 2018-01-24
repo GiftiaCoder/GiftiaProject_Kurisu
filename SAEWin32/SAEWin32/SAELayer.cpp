@@ -11,8 +11,8 @@ CSAELayer::CSAELayer(size_t inputNum, size_t outputNum) :
 	int weightNum = inputNum * outputNum;
 	for (int i = 0; i < weightNum; ++i)
 	{
-		m_EnWei[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)0.5;
-		m_DeWei[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)0.5;
+		m_EnWei[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)1,5;
+		m_DeWei[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)1.5;
 	}
 	m_EnWei.set();
 	m_DeWei.set();

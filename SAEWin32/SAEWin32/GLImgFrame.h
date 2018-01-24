@@ -5,6 +5,7 @@
 #include "SAENetwork.h"
 #include "Config.h"
 
+#include <unordered_set>
 #include <vector>
 #include <string>
 
@@ -32,10 +33,15 @@ private:
 
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int w, int h);
-	afx_msg void OnClose();
+	//afx_msg void OnClose();
+	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 
 public:
 	DECLARE_MESSAGE_MAP()
+
+private:
+	bool m_IsPause;
+	void TrainingPauseOrStart();
 
 private:
 	void GLInitTexture(GLuint tex);
@@ -64,6 +70,9 @@ private:
 	real *m_EncodeData[ENCODE_DATA_NUM];
 	float *m_pTempTexData;
 
-	std::vector<std::string> m_TrainImgPathList;
+	//std::vector<std::string> m_TrainImgPathList;
+private:
+	void LoadImageList(std::vector<std::string> &pathList);
+	std::unordered_set<std::string> m_LoadableImageList, m_UnloadableImageList;
 };
 

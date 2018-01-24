@@ -21,7 +21,7 @@ BOOL CAppEntry::InitApplication()
 BOOL CAppEntry::InitInstance()
 {
 	m_pMainWnd = new CGLImgFrame();
-	m_pMainWnd->ShowWindow(SW_SHOWMAXIMIZED);
+	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
 	return CWinApp::InitInstance();
 }

@@ -59,7 +59,10 @@ public:
 	~cu_array()
 	{
 		cuda_free(cb);
-		cuda_free(hb);
+		if (hb)
+		{
+			cuda_free(hb);
+		}
 	}
 
 	inline T *cbuf()
