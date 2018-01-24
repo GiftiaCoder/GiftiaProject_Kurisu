@@ -4,9 +4,7 @@
 *.ptx
 *.cubin
 *.fatbin
-*.dll
 *.pdb
-*.lib
 *.exp
 *.tlog
 *.log
