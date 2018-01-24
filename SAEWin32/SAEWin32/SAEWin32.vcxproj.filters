@@ -54,6 +54,9 @@
     <ClInclude Include="SAENetwork.h">
       <Filter>SAE</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GLImgFrame.cpp">
@@ -77,5 +80,15 @@
     <ClCompile Include="SAENetwork.cpp">
       <Filter>SAE</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SAEWin32.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Lacia.ico">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

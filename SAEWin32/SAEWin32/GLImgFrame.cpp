@@ -1,6 +1,7 @@
 #include "GLImgFrame.h"
 
 #include "Util.h"
+#include "resource.h"
 
 #include <iostream>
 
@@ -14,6 +15,7 @@ CGLImgFrame::CGLImgFrame() :
 	//m_IsWndAlive(true)
 {
 	Create(NULL, "Lacia_SAE ver0.01");
+
 	memset(m_Texs, 0, sizeof(m_Texs));
 	memset(m_EncodeData, 0, sizeof(m_EncodeData));
 
@@ -282,7 +284,6 @@ void CGLImgFrame::SetDecodeTexData()
 
 void CGLImgFrame::DoPaint()
 {
-	//std::cout << __FUNCSIG__ << std::endl;
 	SetDecodeTexData();
 	for (int x = 0; x < GRID_WIDTH; ++x)
 	{
@@ -291,6 +292,17 @@ void CGLImgFrame::DoPaint()
 			PaintGLTexture(m_Texs[x][y], x, y);
 		}
 	}
+}
+
+int CGLImgFrame::OnCreate(LPCREATESTRUCT lpCs)
+{
+	int ret = CFrameWnd::OnCreate(lpCs);
+
+	HICON hIcon = AfxGetApp()->LoadIcon(IDI_LACIA);
+	SetIcon(hIcon, TRUE);
+	SetIcon(hIcon, FALSE);
+
+	return ret;
 }
 
 void CGLImgFrame::OnPaint()
@@ -348,6 +360,7 @@ void CGLImgFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 }
 
 BEGIN_MESSAGE_MAP(CGLImgFrame, CFrameWnd)
+	ON_WM_CREATE()
 	ON_WM_PAINT()
 	ON_WM_SIZE()
 	ON_WM_KEYDOWN()

@@ -27,10 +27,12 @@ private:
 	BOOL InitGLEnvironment();
 	void InitGLTextureData();
 
+
 private:
 	void SetDecodeTexData();
 	void DoPaint();
 
+	afx_msg int OnCreate(LPCREATESTRUCT plCs);
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int w, int h);
 	//afx_msg void OnClose();

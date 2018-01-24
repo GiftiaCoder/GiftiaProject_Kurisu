@@ -155,6 +155,7 @@
     <ClInclude Include="GLUtil.h" />
     <ClInclude Include="ImageUtil.h" />
     <ClInclude Include="libcu.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SAELayer.h" />
     <ClInclude Include="SAENetwork.h" />
     <ClInclude Include="Util.h" />
@@ -167,6 +168,12 @@
     <ClCompile Include="ImageUtil.cpp" />
     <ClCompile Include="SAELayer.cpp" />
     <ClCompile Include="SAENetwork.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SAEWin32.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Lacia.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
