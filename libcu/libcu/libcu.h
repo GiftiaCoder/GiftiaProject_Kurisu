@@ -49,15 +49,18 @@ class cu_array
 	size_t sz;
 
 public:
-	cu_array(size_t size) :
+	cu_array(size_t size, bool use_host = false) :
 		sz(size),
 		cb((T *)cuda_malloc(size * sizeof(T))),
-		hb((T *)cuda_malloc_host(size * sizeof(T))) {}
+		hb(use_host ? (T *)cuda_malloc_host(size * sizeof(T)) : nullptr) {}
 
 	~cu_array()
 	{
 		cuda_free(cb);
-		cuda_free(hb);
+		if (hb)
+		{
+			cuda_free(hb);
+		}
 	}
 
 	inline T *cbuf()

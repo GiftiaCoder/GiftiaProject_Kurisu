@@ -5,6 +5,9 @@
 class CConfig
 {
 public:
+	const static size_t INPUT_IMAGE_WIDTH;
+	const static size_t INPUT_IMAGE_HEIGHT;
+
 	const static size_t SAENETWORK_INPUT_PIXEL_NUM;
 	const static size_t SAENETWORK_INPUT_NUM;
 	const static size_t SAENETWORK_LAYER_NUM;

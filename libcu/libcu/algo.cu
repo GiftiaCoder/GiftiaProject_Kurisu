@@ -38,14 +38,15 @@ __global__ void cu_merge_output(real merge[], size_t input_num, size_t merge_num
 
 __global__ void cu_output(real merge[], real bias[], real output[], size_t input_num, size_t output_num)
 {
-	const static real TWO_DIV_THREE = (real)(2.0 / 3.0);
+	//const static real TWO_DIV_THREE = (real)(2.0 / 3.0);
 
 	size_t thread_num = gridDim.x * blockDim.x;
 	size_t thread_idx = blockDim.x * blockIdx.x + threadIdx.x;
 	while (thread_idx < output_num)
 	{
 		real out = merge[thread_idx * input_num] + bias[thread_idx];
-		output[thread_idx] = ((real)1.7159 * tanh(out * TWO_DIV_THREE));
+		output[thread_idx] = ((real)2.0 * tanh(out * 0.01));
+		//output[thread_idx] = ((real)1.7159 * tanh(out * TWO_DIV_THREE));
 		//real tout = ((real)1.7159 * tanh(out * TWO_DIV_THREE));
 		//if (__isnan(tout))
 		//{

@@ -11,21 +11,21 @@ CSAELayer::CSAELayer(size_t inputNum, size_t outputNum) :
 	int weightNum = inputNum * outputNum;
 	for (int i = 0; i < weightNum; ++i)
 	{
-		m_EnWei[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)1,5;
-		m_DeWei[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)1.5;
+		m_EnWei[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)(2.0 * 2.0);
+		m_DeWei[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)(2.0 * 2.0);
 	}
 	m_EnWei.set();
 	m_DeWei.set();
 
 	for (int i = 0; i < outputNum; ++i)
 	{
-		m_EnBias[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)0.5;
+		m_EnBias[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)(2.0 * 2.0);
 	}
 	m_EnBias.set();
 
 	for (int i = 0; i < inputNum; ++i)
 	{
-		m_DeBias[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)0.5;
+		m_DeBias[i] = (((real)(rand()) / (real)RAND_MAX) - (real)0.5) * (real)(2.0 * 2.0);
 	}
 	m_DeBias.set();
 

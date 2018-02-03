@@ -155,7 +155,6 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <CodeGeneration>%(CodeGeneration)</CodeGeneration>
       <FastMath>false</FastMath>
       <NvccCompilation>compile</NvccCompilation>
-      <AdditionalOptions>-arch=sm_30 %(AdditionalOptions)</AdditionalOptions>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -26,12 +26,14 @@ bool CImageUtil::LoadTexture(const char *texpath, real *dst)
 		return false;
 	}
 
+	pBitmap = FreeImage_Rescale(pBitmap, CConfig::INPUT_IMAGE_WIDTH, CConfig::INPUT_IMAGE_HEIGHT);
+
 	BYTE *pData = FreeImage_GetBits(pBitmap);
 	for (int i = 0; i < CConfig::SAENETWORK_INPUT_NUM; i += 3)
 	{
-		dst[i + 0] = (real)0.8 * ((((real)(pData[i + 2])) / (real)128.0) - (real)1.0);
-		dst[i + 1] = (real)0.8 * ((((real)(pData[i + 1])) / (real)128.0) - (real)1.0);
-		dst[i + 2] = (real)0.8 * ((((real)(pData[i + 0])) / (real)128.0) - (real)1.0);
+		dst[i + 0] = ((((real)(pData[i + 2])) / (real)128.0) - (real)1.0);
+		dst[i + 1] = ((((real)(pData[i + 1])) / (real)128.0) - (real)1.0);
+		dst[i + 2] = ((((real)(pData[i + 0])) / (real)128.0) - (real)1.0);
 		//dst[i + 3] = (real)0.0;
 	}
 
