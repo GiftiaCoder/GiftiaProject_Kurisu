@@ -1,2 +1,2 @@
-# GiftiaProject_Kurisu
+# GiftiaProject_Lacia
 A NeuroNetwork demo written in CUDA/C++
